@@ -5,13 +5,14 @@ import re
 import json
 import cookielib
 
-site = "http://seasonvar.ru"
-opener = CreateOpener()
-
 def CreateOpener():
 	opener = urllib2.build_opener()
 	opener.addheaders.append(('Cookie', 'sva=lVe324PqsI24'))
 	urllib2.install_opener(opener)
+	return opener
+
+site = "http://seasonvar.ru"
+opener = CreateOpener()
 
 def GetHTML(url):
 	conn = opener.open(url)
