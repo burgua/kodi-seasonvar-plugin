@@ -6,10 +6,12 @@ import json
 import cookielib
 
 site = "http://seasonvar.ru"
+opener = CreateOpener()
 
-opener = urllib2.build_opener()
-opener.addheaders.append(('Cookie', 'sva=lVe324PqsI24'))
-urllib2.install_opener(opener)
+def CreateOpener():
+	opener = urllib2.build_opener()
+	opener.addheaders.append(('Cookie', 'sva=lVe324PqsI24'))
+	urllib2.install_opener(opener)
 
 def GetHTML(url):
 	conn = opener.open(url)
@@ -33,7 +35,6 @@ def GetFilesLinks(json_response):
 
 def PrintPlayList(id, secure):
 	url = 'http://seasonvar.ru/playls2/'+secure+'x/trans/'+id+'/list.xml'
-	print url
 	json_response = LoadJson(url)
 	print GetFilesLinks(json_response)
 
