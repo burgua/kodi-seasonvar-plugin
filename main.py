@@ -15,10 +15,15 @@ site = "http://seasonvar.ru"
 opener = CreateOpener()
 
 def GetHTML(url):
-	conn = opener.open(url)
-	html = conn.read()
-	conn.close()
-	return html 
+	try:
+		conn = opener.open(url)
+		html = conn.read()
+		conn.close()
+		return html 
+	except:
+		return
+	else:
+		return 
 
 def LoadJson(url):
 	response = GetHTML(url)
