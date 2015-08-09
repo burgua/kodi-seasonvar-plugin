@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.seasonvar.light" name="Seasonvar plugin" version="0.1" provider-name="burgua">
+  <requires>
+    <import addon="xbmc.python" version="2.20.0"/>
+    <import addon="xbmc.gui" version="5.9.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="main.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">Watch episodes from seasonvar.ru</summary>
+    <description lang="en">Watch episodes from seasonvar.ru</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <platform>all</platform>
+    <license></license>
+    <forum></forum>
+    <website></website>
+    <email></email>
+    <source></source>
+  </extension>
+</addon>
