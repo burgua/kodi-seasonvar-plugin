@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
 import urllib
 import urllib2
 import sys
@@ -47,7 +51,7 @@ def play(url, name):
     xbmc.Player().play(url, listitem)
 
 
-def PrintFilmLinks(html):
+def print_film_links(html):
     exepat = re.compile(r'film-list-item">.*?<a href="(.*?)".*?>(.*?)<\/a>', re.DOTALL)
     data = exepat.findall(html)
     for row in data:
@@ -107,6 +111,24 @@ def get_params():
     return param
 
 
+def search(localpath, handle):
+    vq = get_keyboard(heading="Enter the query")
+    title = urllib.quote_plus(vq)
+    searchUrl = 'http://seasonvar.ru/autocomplete.php?query=' + title
+    print searchUrl
+    show_search_list(localpath, handle, searchUrl)
+
+
+def show_search_list(localpath, handle, url):
+    html = get_html(url)
+    data = html.encode('utf-8').encode('unicode_escape')
+    print data
+    response = json.loads(data)
+    i = 0
+    for suggest in response['suggestions']:
+        url = site + "/" + response['data'][i]
+        index(url, "Search")
+
 def add_dir(url, name, mode):
     u = (sys.argv[0] +
          "?url=" + urllib.quote_plus(url) +
@@ -118,6 +140,14 @@ def add_dir(url, name, mode):
     ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),
                                      url=u, listitem=liz, isFolder=True)
     return ok
+
+
+def get_keyboard(default="", heading="", hidden=False):
+    keyboard = xbmc.Keyboard(default, heading, hidden)
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+        return unicode(keyboard.getText(), "utf-8")
+    return default
 
 
 site = "http://seasonvar.ru"
@@ -143,10 +173,16 @@ try:
 except:
     pass
 
+localpath = sys.argv[0]
+handle = int(sys.argv[1])
+
 # first page
 if mode == None:
+    li = xbmcgui.ListItem("Search")
+    u = localpath + "?mode=3"
+    xbmcplugin.addDirectoryItem(handle, u, li, True)
     html = get_html(site)
-    PrintFilmLinks(html)
+    print_film_links(html)
 
 # page with links
 elif mode == 1:
@@ -155,5 +191,9 @@ elif mode == 1:
 # page with links
 elif mode == 2:
     play(url, name)
+
+# page with links
+elif mode == 3:
+    search(sys.argv[0], int(sys.argv[1]))
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
