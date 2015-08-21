@@ -2,35 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from seasonvar_web_opener import *
+
 import urllib
-import urllib2
 import sys
 import re
 import json
 
 
-def create_opener():
-    opener = urllib2.build_opener()
-    opener.addheaders.append(('Cookie', 'sva=lVe324PqsI24'))
-    urllib2.install_opener(opener)
-    return opener
-
-
-def get_html(url):
-    try:
-        conn = opener.open(url)
-        html = conn.read()
-        conn.close()
-        return html
-    except:
-        # ToDo: failed!
-        return
-    else:
-        return
-
-
 def load_json(url):
-    response = get_html(url)
+    response = SeasonvarWebOpener.get_html(url)
     return json.loads(response)
 
 
@@ -62,7 +43,7 @@ def print_film_links(html):
 
 
 def index(page, name):
-    html = get_html(page)
+    html = SeasonvarWebOpener.get_html(page)
     elem = re.findall('id": "(.*)", "serial": "(.*)" , "type": "html5", "secure": "(.*)"', html)[0]
     id = elem[0]
     secure = elem[2]
@@ -120,7 +101,7 @@ def search(localpath, handle):
 
 
 def show_search_list(localpath, handle, url):
-    html = get_html(url)
+    html = SeasonvarWebOpener.get_html(url)
     data = html.encode('utf-8').encode('unicode_escape')
     print data
     response = json.loads(data)
@@ -151,7 +132,6 @@ def get_keyboard(default="", heading="", hidden=False):
 
 
 site = "http://seasonvar.ru"
-opener = create_opener()
 
 import xbmcaddon, xbmc, xbmcgui, xbmcplugin
 
@@ -181,11 +161,15 @@ if mode == None:
     li = xbmcgui.ListItem("Search")
     u = localpath + "?mode=3"
     xbmcplugin.addDirectoryItem(handle, u, li, True)
-    html = get_html(site)
+    html = SeasonvarWebOpener.get_html(site)
     print_film_links(html)
 
 # page with links
 elif mode == 1:
+    print "Main.py => mode == 1"
+    print url
+    name = name.encode('utf-8').encode('unicode_escape')
+    print name
     index(url, name)
 
 # page with links
