@@ -1,18 +1,43 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-from seasonvar_web_opener import *
+from seasonvar_grabber import *
 
 import urllib
 import sys
-import re
 import json
 
+import xbmcgui
+import xbmcplugin
 
-def load_json(url):
-    response = SeasonvarWebOpener.get_html(url)
-    return json.loads(response)
+
+def add_dir(url, name, iconImage, mode):
+    u = (sys.argv[0] +
+         "?url=" + urllib.quote_plus(url) +
+         "&mode=" + str(mode) +
+         "&name=" + urllib.quote_plus(name))
+    ok = True
+    liz = xbmcgui.ListItem(name, iconImage=iconImage)
+    liz.setInfo(type="Video", infoLabels={"Title": name})
+    ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),
+                                     url=u, listitem=liz, isFolder=True)
+    return ok
+
+
+def get_keyboard(default="", heading="", hidden=False):
+    keyboard = xbmc.Keyboard(default, heading, hidden)
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+        return unicode(keyboard.getText(), "utf-8")
+    return default
+
+
+def index(page, name):
+    html = SeasonvarWebOpener().get_html(page)
+    elem = re.findall('id": "(.*)", "serial": "(.*)" , "type": "html5", "secure": "(.*)"', html)[0]
+    id = elem[0]
+    secure = elem[2]
+    print_playlist(id, secure, name)
 
 
 def get_file_links(json_response):
@@ -26,33 +51,9 @@ def get_file_links(json_response):
     return files
 
 
-def play(url, name):
-    listitem = xbmcgui.ListItem(name)
-    listitem.setInfo('video', {'Title': name})
-    xbmc.Player().play(url, listitem)
-
-
-def print_film_links(html):
-    exepat = re.compile(r'film-list-item">.*?<a href="(.*?)".*?>(.*?)<\/a>', re.DOTALL)
-    data = exepat.findall(html)
-    for row in data:
-        print row[1]
-        page = site + row[0]
-        name = row[1]
-        add_dir(page, name, 1)
-
-
-def index(page, name):
-    html = SeasonvarWebOpener.get_html(page)
-    elem = re.findall('id": "(.*)", "serial": "(.*)" , "type": "html5", "secure": "(.*)"', html)[0]
-    id = elem[0]
-    secure = elem[2]
-    print_playlist(id, secure, name)
-
-
 def print_playlist(id, secure, name):
     url = 'http://seasonvar.ru/playls2/' + secure + 'x/trans/' + id + '/list.xml'
-    json_response = load_json(url)
+    json_response = SeasonvarWebOpener().get_json(url)
     files = get_file_links(json_response)
     i = 0
     for one_file in files:
@@ -73,6 +74,12 @@ def add_downLink(name, url, mode):
     return ok
 
 
+def play(url, name):
+    listitem = xbmcgui.ListItem(name)
+    listitem.setInfo('video', {'Title': name})
+    xbmc.Player().play(url, listitem)
+
+
 def get_params():
     param = []
     paramstring = sys.argv[2]
@@ -88,7 +95,6 @@ def get_params():
             splitparams = pairsofparams[i].split('=')
             if (len(splitparams)) == 2:
                 param[splitparams[0]] = splitparams[1]
-
     return param
 
 
@@ -96,88 +102,71 @@ def search(localpath, handle):
     vq = get_keyboard(heading="Enter the query")
     title = urllib.quote_plus(vq)
     searchUrl = 'http://seasonvar.ru/autocomplete.php?query=' + title
-    print searchUrl
     show_search_list(localpath, handle, searchUrl)
 
 
-def show_search_list(localpath, handle, url):
-    html = SeasonvarWebOpener.get_html(url)
-    data = html.encode('utf-8').encode('unicode_escape')
+def show_search_list(localpath, handle, searchUrl):
+    data = SeasonvarWebOpener().get_html(searchUrl) 
+    print "1111111"
     print data
-    response = json.loads(data)
-    i = 0
-    for suggest in response['suggestions']:
-        url = site + "/" + response['data'][i]
-        index(url, "Search")
-
-def add_dir(url, name, mode):
-    u = (sys.argv[0] +
-         "?url=" + urllib.quote_plus(url) +
-         "&mode=" + str(mode) +
-         "&name=" + urllib.quote_plus(name))
-    ok = True
-    liz = xbmcgui.ListItem(name, iconImage="icon.png")
-    liz.setInfo(type="Video", infoLabels={"Title": name})
-    ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),
-                                     url=u, listitem=liz, isFolder=True)
-    return ok
+    data = data.encode('utf-8').encode('unicode_escape')
+    print "22222"
+    print data
+    data = json.loads(data)
+    if (data["query"]):
+        total = len(data["suggestions"])
+        print total
+        serials = []
+        for x in range(0, total-1):
+            serials.append(Serial("http://seasonvar.ru/" + data["data"][x], data["id"][x], data["data"][x]))
+        for serial in serials:
+            add_dir(serial.get_url(), serial.get_name(), serial.get_thumb(), 1)
 
 
-def get_keyboard(default="", heading="", hidden=False):
-    keyboard = xbmc.Keyboard(default, heading, hidden)
-    keyboard.doModal()
-    if (keyboard.isConfirmed()):
-        return unicode(keyboard.getText(), "utf-8")
-    return default
+def main():
+    params = get_params()
+    url = None
+    name = None
+    mode = None
 
+    try:
+        url = urllib.unquote_plus(params["url"])
+    except:
+        pass
+    try:
+        name = urllib.unquote_plus(params["name"])
+    except:
+        pass
+    try:
+        mode = int(params["mode"])
+    except:
+        pass
 
-site = "http://seasonvar.ru"
+    localpath = sys.argv[0]
+    handle = int(sys.argv[1])
 
-import xbmcaddon, xbmc, xbmcgui, xbmcplugin
+    grabber = SeasonvarGrabber()
 
-params = get_params()
-url = None
-name = None
-mode = None
+    # first page
+    if mode is None:
+        li = xbmcgui.ListItem("Search")
+        u = localpath + "?mode=3"
+        xbmcplugin.addDirectoryItem(handle, u, li, True)
+        for serial in grabber.get_main_page_data():
+            add_dir(serial.get_url(), serial.get_name(), serial.get_thumb(), 1)
 
-try:
-    url = urllib.unquote_plus(params["url"])
-except:
-    pass
-try:
-    name = urllib.unquote_plus(params["name"])
-except:
-    pass
-try:
-    mode = int(params["mode"])
-except:
-    pass
+    # page with links
+    elif mode is 1:
+        index(url, name)
 
-localpath = sys.argv[0]
-handle = int(sys.argv[1])
+    # page with links
+    elif mode is 2:
+        play(url, name)
 
-# first page
-if mode == None:
-    li = xbmcgui.ListItem("Search")
-    u = localpath + "?mode=3"
-    xbmcplugin.addDirectoryItem(handle, u, li, True)
-    html = SeasonvarWebOpener.get_html(site)
-    print_film_links(html)
+    # page with links
+    elif mode == 3:
+        search(sys.argv[0], int(sys.argv[1]))
 
-# page with links
-elif mode == 1:
-    print "Main.py => mode == 1"
-    print url
-    name = name.encode('utf-8').encode('unicode_escape')
-    print name
-    index(url, name)
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-# page with links
-elif mode == 2:
-    play(url, name)
-
-# page with links
-elif mode == 3:
-    search(sys.argv[0], int(sys.argv[1]))
-
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+main()

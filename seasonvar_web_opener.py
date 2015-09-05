@@ -1,13 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
 import urllib2
+import json
 
 
 class SeasonvarWebOpener:
 
     __instance = None
+
+    def __init__(self):
+        # ToDo: wtf?
+        return
 
     @staticmethod
     def __create_opener():
@@ -16,17 +20,19 @@ class SeasonvarWebOpener:
         urllib2.install_opener(web_opener)
         return web_opener
 
-    @staticmethod
-    def __get_opener():
+    def __get_opener(self):
         # ToDo: singleton!
-        if SeasonvarWebOpener._instance is None:
-            _instance = SeasonvarWebOpener.__create_opener()
-        return _instance
+        if self.__instance is None:
+            self.__instance = SeasonvarWebOpener.__create_opener()
+        return self.__instance
 
-    @staticmethod
-    def get_html(url):
+    def get_json(self, url):
+        response = self.get_html(url)
+        return json.loads(response)
+
+    def get_html(self, url):
         try:
-            conn = SeasonvarWebOpener.__get_opener().open(url)
+            conn = self.__get_opener().open(url)
             html = conn.read()
             conn.close()
             return html
