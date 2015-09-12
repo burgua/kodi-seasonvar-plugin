@@ -3,6 +3,7 @@
 
 from seasonvar_grabber import *
 
+
 import urllib
 import sys
 import json
@@ -106,19 +107,17 @@ def search(localpath, handle):
 
 
 def show_search_list(localpath, handle, searchUrl):
-    data = SeasonvarWebOpener().get_html(searchUrl) 
-    print "1111111"
-    print data
+    data = SeasonvarWebOpener().get_html(searchUrl)
     data = data.encode('utf-8').encode('unicode_escape')
-    print "22222"
-    print data
     data = json.loads(data)
     if (data["query"]):
         total = len(data["suggestions"])
-        print total
         serials = []
         for x in range(0, total-1):
-            serials.append(Serial("http://seasonvar.ru/" + data["data"][x], data["id"][x], data["data"][x]))
+            serials.append(Serial(
+                "http://seasonvar.ru/" + data["data"][x],
+                data["id"][x],
+                data["data"][x]))
         for serial in serials:
             add_dir(serial.get_url(), serial.get_name(), serial.get_thumb(), 1)
 
