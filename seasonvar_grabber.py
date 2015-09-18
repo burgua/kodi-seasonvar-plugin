@@ -47,7 +47,12 @@ class SeasonvarGrabber:
             re.DOTALL)
         data = regexp.findall(html)
         films = []
+        ids_list = []
+
         for one_film in data:
-            films.append(Serial(self.__site + one_film[0],
-                         one_film[1], one_film[2] + one_film[3]))
+            serial = Serial(self.__site + one_film[0], one_film[1], one_film[2] + one_film[3])
+
+            if (not (serial.get_id() in ids_list)):
+                films.append(serial)
+                ids_list.append(serial.get_id())
         return films
