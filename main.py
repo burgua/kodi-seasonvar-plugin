@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from seasonvar_grabber import *
+# Seasonvar
+# поиск тексты
 
+from seasonvar_grabber import *
 
 import urllib
 import sys
@@ -101,6 +103,7 @@ def get_params():
 
 def search(localpath, handle):
     vq = get_keyboard(heading="Enter the query")
+    vq = vq.encode('utf-8')
     title = urllib.quote_plus(vq)
     searchUrl = 'http://seasonvar.ru/autocomplete.php?query=' + title
     show_search_list(localpath, handle, searchUrl)
