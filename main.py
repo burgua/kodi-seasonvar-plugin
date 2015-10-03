@@ -1,9 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Seasonvar
-# поиск тексты
-
 from seasonvar_grabber import *
 
 import urllib
