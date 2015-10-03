@@ -116,7 +116,7 @@ def show_search_list(localpath, handle, searchUrl):
     if (data["query"]):
         total = len(data["suggestions"])
         serials = []
-        for x in range(0, total-1):
+        for x in range(0, total):
             serials.append(Serial(
                 "http://seasonvar.ru/" + data["data"][x],
                 data["id"][x],
