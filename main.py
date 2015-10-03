@@ -111,7 +111,6 @@ def search(localpath, handle):
 
 def show_search_list(localpath, handle, searchUrl):
     data = SeasonvarWebOpener().get_html(searchUrl)
-    data = data.encode('utf-8').encode('unicode_escape')
     data = json.loads(data)
     if (data["query"]):
         total = len(data["suggestions"])
@@ -120,7 +119,7 @@ def show_search_list(localpath, handle, searchUrl):
             serials.append(Serial(
                 "http://seasonvar.ru/" + data["data"][x],
                 data["id"][x],
-                data["data"][x]))
+                data["suggestions"][x].encode('utf8')))
         for serial in serials:
             add_dir(serial.get_url(), serial.get_name(), serial.get_thumb(), 1)
 
