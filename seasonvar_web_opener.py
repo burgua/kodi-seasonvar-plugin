@@ -10,7 +10,6 @@ class SeasonvarWebOpener:
     __instance = None
 
     def __init__(self):
-        # ToDo: wtf?
         return
 
     @staticmethod
@@ -21,7 +20,6 @@ class SeasonvarWebOpener:
         return web_opener
 
     def __get_opener(self):
-        # ToDo: singleton!
         if self.__instance is None:
             self.__instance = SeasonvarWebOpener.__create_opener()
         return self.__instance
@@ -37,5 +35,4 @@ class SeasonvarWebOpener:
             conn.close()
             return html
         except:
-            # ToDo: failed!
             return None
